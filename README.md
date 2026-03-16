@@ -115,6 +115,13 @@ testassert.ThatOrdered(t, n).
 | `ErrorAssertion` | `IsNil`, `IsNotNil`, `Is`, `Contains`, `As` |
 | `JSONAssertion` | `Equals`, `Contains`, `HasKey` |
 
+## Development
+
+```bash
+go test ./...
+go vet ./...
+```
+
 ## License
 
 MIT
