@@ -4,7 +4,7 @@
 [![Go Reference](https://pkg.go.dev/badge/github.com/philiprehberger/go-testassert.svg)](https://pkg.go.dev/github.com/philiprehberger/go-testassert)
 [![License](https://img.shields.io/github/license/philiprehberger/go-testassert)](LICENSE)
 
-Fluent, type-safe test assertions for Go. Built with generics, zero dependencies.
+Fluent, type-safe test assertions for Go. Built with generics, zero dependencies
 
 ## Installation
 
