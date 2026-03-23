@@ -34,6 +34,13 @@ testassert.ThatOrdered(t, age).IsGreaterOrEqual(18)
 testassert.ThatOrdered(t, temp).IsLessOrEqual(37.5)
 ```
 
+### Tolerance
+
+```go
+testassert.ThatNumeric(t, 3.14).Within(3.0, 0.2)   // passes: 2.8 <= 3.14 <= 3.2
+testassert.ThatNumeric(t, elapsed).Within(100, 10)  // passes if 90 <= elapsed <= 110
+```
+
 ### String assertions
 
 ```go
@@ -54,6 +61,22 @@ testassert.ThatSlice(t, items).IsNotEmpty()
 testassert.ThatSlice(t, []int{}).IsEmpty()
 ```
 
+### Map assertions
+
+```go
+testassert.ThatMap(t, m).HasKey("name")
+testassert.ThatMap(t, m).HasLen(3)
+testassert.ThatMap(t, m).IsNotEmpty()
+testassert.ThatMap(t, map[string]int{}).IsEmpty()
+```
+
+### Panic assertions
+
+```go
+testassert.Panics(t, func() { panic("boom") })
+testassert.NotPanics(t, func() { safeOperation() })
+```
+
 ### Error assertions
 
 ```go
@@ -72,6 +95,12 @@ testassert.ThatError(t, err).As(&pathErr)
 testassert.ThatJSON(t, body).Equals(`{"name":"alice","age":30}`)
 testassert.ThatJSON(t, body).HasKey("name")
 testassert.ThatJSON(t, body).Contains("age", 30)
+```
+
+### Custom messages
+
+```go
+testassert.That(t, result).WithMessage("user lookup").Equals(expected)
 ```
 
 ### Chaining
@@ -97,19 +126,25 @@ testassert.ThatOrdered(t, n).
 |----------|-------------|
 | `That[T](t, got)` | Generic assertion for any type |
 | `ThatOrdered[T](t, got)` | Assertion for ordered types (int, float, string) |
+| `ThatNumeric[T](t, got)` | Assertion for numeric types with arithmetic checks |
 | `ThatString(t, got)` | String-specific assertions |
 | `ThatSlice[T](t, got)` | Slice-specific assertions |
+| `ThatMap[K, V](t, got)` | Map-specific assertions |
 | `ThatError(t, got)` | Error-specific assertions |
 | `ThatJSON(t, got)` | JSON string assertions |
+| `Panics(t, fn)` | Assert function panics |
+| `NotPanics(t, fn)` | Assert function does not panic |
 
 ### Assertion Methods
 
 | Type | Methods |
 |------|---------|
-| `Assertion[T]` | `Equals`, `NotEquals`, `IsNil`, `IsNotNil` |
+| `Assertion[T]` | `Equals`, `NotEquals`, `IsNil`, `IsNotNil`, `WithMessage` |
 | `OrderedAssertion[T]` | `Equals`, `NotEquals`, `IsGreaterThan`, `IsLessThan`, `IsGreaterOrEqual`, `IsLessOrEqual` |
+| `NumericAssertion[T]` | `Within` |
 | `StringAssertion` | `Equals`, `Contains`, `HasPrefix`, `HasSuffix`, `IsEmpty`, `HasLen`, `Matches` |
 | `SliceAssertion[T]` | `HasLen`, `IsEmpty`, `IsNotEmpty`, `Contains` |
+| `MapAssertion[K, V]` | `HasKey`, `HasLen`, `IsEmpty`, `IsNotEmpty` |
 | `ErrorAssertion` | `IsNil`, `IsNotNil`, `Is`, `Contains`, `As` |
 | `JSONAssertion` | `Equals`, `Contains`, `HasKey` |
 

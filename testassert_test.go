@@ -326,6 +326,100 @@ func TestThatError_Contains_NilError(t *testing.T) {
 	}
 }
 
+// --- WithMessage ---
+
+func TestThat_WithMessage(t *testing.T) {
+	That(t, 42).WithMessage("answer check").Equals(42)
+
+	mt := newMockT()
+	That(mt, 1).WithMessage("custom prefix").Equals(2)
+	if !mt.failed {
+		t.Error("expected failure")
+	}
+	if len(mt.messages) == 0 {
+		t.Fatal("expected error message")
+	}
+	if !findSubstring(mt.messages[0], "custom prefix") {
+		t.Errorf("expected custom prefix in message, got: %s", mt.messages[0])
+	}
+}
+
+func TestThat_WithMessage_Chaining(t *testing.T) {
+	mt := newMockT()
+	That(mt, "hello").WithMessage("value check").NotEquals("hello")
+	if !mt.failed {
+		t.Error("expected failure")
+	}
+	if len(mt.messages) == 0 {
+		t.Fatal("expected error message")
+	}
+	if !findSubstring(mt.messages[0], "value check") {
+		t.Errorf("expected custom prefix in message, got: %s", mt.messages[0])
+	}
+}
+
+// --- Within (NumericAssertion) ---
+
+func TestThatNumeric_Within(t *testing.T) {
+	ThatNumeric(t, 10).Within(10, 0)
+	ThatNumeric(t, 10).Within(12, 3)
+	ThatNumeric(t, 10).Within(8, 3)
+	ThatNumeric(t, 3.14).Within(3.0, 0.2)
+
+	mt := newMockT()
+	ThatNumeric(mt, 10).Within(20, 3)
+	if !mt.failed {
+		t.Error("expected failure when value is outside tolerance")
+	}
+}
+
+func TestThatNumeric_Within_Boundary(t *testing.T) {
+	ThatNumeric(t, 10).Within(7, 3)
+	ThatNumeric(t, 10).Within(13, 3)
+
+	mt := newMockT()
+	ThatNumeric(mt, 10).Within(6, 3)
+	if !mt.failed {
+		t.Error("expected failure when value is just outside tolerance")
+	}
+}
+
+// --- Panics / NotPanics ---
+
+func TestPanics(t *testing.T) {
+	Panics(t, func() {
+		panic("boom")
+	})
+
+	mt := newMockT()
+	Panics(mt, func() {
+		// does not panic
+	})
+	if !mt.failed {
+		t.Error("expected failure when function does not panic")
+	}
+}
+
+func TestNotPanics(t *testing.T) {
+	NotPanics(t, func() {
+		// does not panic
+	})
+
+	mt := newMockT()
+	NotPanics(mt, func() {
+		panic("boom")
+	})
+	if !mt.failed {
+		t.Error("expected failure when function panics")
+	}
+}
+
+func TestPanics_WithNilPanic(t *testing.T) {
+	Panics(t, func() {
+		panic(nil)
+	})
+}
+
 // --- Chaining ---
 
 func TestChaining(t *testing.T) {

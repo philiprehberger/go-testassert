@@ -17,6 +17,7 @@ import (
 type Assertion[T any] struct {
 	t   testing.TB
 	got T
+	msg string
 }
 
 // That creates a new [Assertion] for the given value.
@@ -25,11 +26,25 @@ func That[T any](t testing.TB, got T) *Assertion[T] {
 	return &Assertion[T]{t: t, got: got}
 }
 
+// WithMessage sets a custom failure message prefix for this assertion chain.
+func (a *Assertion[T]) WithMessage(msg string) *Assertion[T] {
+	a.msg = msg
+	return a
+}
+
+// formatMsg prepends the custom message prefix if set.
+func (a *Assertion[T]) formatMsg(s string) string {
+	if a.msg != "" {
+		return a.msg + ": " + s
+	}
+	return s
+}
+
 // Equals asserts that got is deeply equal to want.
 func (a *Assertion[T]) Equals(want T) *Assertion[T] {
 	a.t.Helper()
 	if !reflect.DeepEqual(a.got, want) {
-		a.t.Errorf("Equals failed\n  got:  %v\n  want: %v", a.got, want)
+		a.t.Errorf(a.formatMsg("Equals failed\n  got:  %v\n  want: %v"), a.got, want)
 	}
 	return a
 }
@@ -38,7 +53,7 @@ func (a *Assertion[T]) Equals(want T) *Assertion[T] {
 func (a *Assertion[T]) NotEquals(want T) *Assertion[T] {
 	a.t.Helper()
 	if reflect.DeepEqual(a.got, want) {
-		a.t.Errorf("NotEquals failed\n  got: %v\n  should differ from: %v", a.got, want)
+		a.t.Errorf(a.formatMsg("NotEquals failed\n  got: %v\n  should differ from: %v"), a.got, want)
 	}
 	return a
 }
@@ -48,7 +63,7 @@ func (a *Assertion[T]) NotEquals(want T) *Assertion[T] {
 func (a *Assertion[T]) IsNil() *Assertion[T] {
 	a.t.Helper()
 	if !isNil(a.got) {
-		a.t.Errorf("IsNil failed\n  got: %v\n  want: nil", a.got)
+		a.t.Errorf(a.formatMsg("IsNil failed\n  got: %v\n  want: nil"), a.got)
 	}
 	return a
 }
@@ -57,7 +72,7 @@ func (a *Assertion[T]) IsNil() *Assertion[T] {
 func (a *Assertion[T]) IsNotNil() *Assertion[T] {
 	a.t.Helper()
 	if isNil(a.got) {
-		a.t.Errorf("IsNotNil failed\n  got: nil\n  want: non-nil value")
+		a.t.Errorf(a.formatMsg("IsNotNil failed\n  got: nil\n  want: non-nil value"))
 	}
 	return a
 }
@@ -125,6 +140,39 @@ func (a *OrderedAssertion[T]) IsLessOrEqual(v T) *OrderedAssertion[T] {
 	a.t.Helper()
 	if !(a.got <= v) {
 		a.t.Errorf("IsLessOrEqual failed\n  got:  %v\n  want: <= %v", a.got, v)
+	}
+	return a
+}
+
+// Numeric is a constraint for numeric types that support arithmetic operations.
+type Numeric interface {
+	~int | ~int8 | ~int16 | ~int32 | ~int64 |
+		~uint | ~uint8 | ~uint16 | ~uint32 | ~uint64 | ~uintptr |
+		~float32 | ~float64
+}
+
+// NumericAssertion provides fluent assertions for numeric types that support
+// arithmetic operations like tolerance checks.
+type NumericAssertion[T Numeric] struct {
+	t   testing.TB
+	got T
+}
+
+// ThatNumeric creates a new [NumericAssertion] for a numeric value.
+// It provides all ordered comparison methods plus arithmetic-based assertions.
+func ThatNumeric[T Numeric](t testing.TB, got T) *NumericAssertion[T] {
+	t.Helper()
+	return &NumericAssertion[T]{t: t, got: got}
+}
+
+// Within asserts that got is within tolerance of expected.
+// The check passes when expected - tolerance <= got <= expected + tolerance.
+func (a *NumericAssertion[T]) Within(expected T, tolerance T) *NumericAssertion[T] {
+	a.t.Helper()
+	low := expected - tolerance
+	high := expected + tolerance
+	if a.got < low || a.got > high {
+		a.t.Errorf("Within failed\n  got:       %v\n  expected:  %v\n  tolerance: %v\n  range:     [%v, %v]", a.got, expected, tolerance, low, high)
 	}
 	return a
 }
@@ -320,6 +368,28 @@ func (a *ErrorAssertion) As(target any) *ErrorAssertion {
 		a.t.Errorf("As failed\n  got:  %v (%T)\n  want: assignable to %T", a.got, a.got, target)
 	}
 	return a
+}
+
+// Panics asserts that fn panics when called.
+func Panics(t testing.TB, fn func()) {
+	t.Helper()
+	defer func() {
+		if r := recover(); r == nil {
+			t.Errorf("Panics failed\n  expected function to panic, but it did not")
+		}
+	}()
+	fn()
+}
+
+// NotPanics asserts that fn does not panic when called.
+func NotPanics(t testing.TB, fn func()) {
+	t.Helper()
+	defer func() {
+		if r := recover(); r != nil {
+			t.Errorf("NotPanics failed\n  expected function not to panic\n  panic value: %v", r)
+		}
+	}()
+	fn()
 }
 
 // isNil checks whether v is nil, handling both typed and untyped nils.
