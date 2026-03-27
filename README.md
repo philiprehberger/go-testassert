@@ -1,6 +1,6 @@
 # go-testassert
 
-[![CI](https://github.com/philiprehberger/go-testassert/actions/workflows/ci.yml/badge.svg)](https://github.com/philiprehberger/go-testassert/actions/workflows/ci.yml) [![Go Reference](https://pkg.go.dev/badge/github.com/philiprehberger/go-testassert.svg)](https://pkg.go.dev/github.com/philiprehberger/go-testassert) [![License](https://img.shields.io/github/license/philiprehberger/go-testassert)](LICENSE)
+[![CI](https://github.com/philiprehberger/go-testassert/actions/workflows/ci.yml/badge.svg)](https://github.com/philiprehberger/go-testassert/actions/workflows/ci.yml) [![Go Reference](https://pkg.go.dev/badge/github.com/philiprehberger/go-testassert.svg)](https://pkg.go.dev/github.com/philiprehberger/go-testassert) [![License](https://img.shields.io/github/license/philiprehberger/go-testassert)](LICENSE) [![Sponsor](https://img.shields.io/badge/sponsor-GitHub%20Sponsors-ec6cb9)](https://github.com/sponsors/philiprehberger)
 
 Fluent, type-safe test assertions for Go. Built with generics, zero dependencies
 
